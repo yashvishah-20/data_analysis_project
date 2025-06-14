@@ -1,0 +1,46 @@
+import pandas as pd
+import ast #for eval
+import matplotlib.pyplot as plt
+import seaborn as sns
+df=pd.read_csv(r"C:\Users\Yashvi\Downloads\data_jobs.csv")
+
+df_US = df[(df['job_title_short'] == 'Data Analyst') & (df['job_country'] == 'United States')].copy()
+df_US['job_skills'] = df_US['job_skills'].apply(lambda x: ast.literal_eval(x) if pd.notna(x) else x)
+df_US=df_US.dropna(subset=['salary_year_avg'])
+df_explode=df_US.explode('job_skills')
+skill_counts=df_explode['job_skills'].value_counts()
+skill_sum=skill_counts.sum()
+skill_percent=(skill_counts/skill_sum)*100
+median_salary= df_explode.groupby('job_skills')['salary_year_avg'].agg(['median'])
+skill_df = pd.DataFrame({
+    'skill_count': skill_counts,
+    'skill_percent': skill_percent,
+    'median_salary':median_salary['median']
+})
+skill_df = skill_df.reset_index().rename(columns={'job_skills': 'skill'})
+skill_df = skill_df.sort_values(by='skill_count', ascending=False).head(15).reset_index(drop=True)
+skill_df = skill_df.sort_values(by='skill_count', ascending=False).head(15)
+print(skill_df)
+plt.figure(figsize=(10, 6))
+
+# Scatter plot
+plt.scatter(skill_df['skill_percent'], skill_df['median_salary'])
+
+# Add text labels for each skill
+for i in range(len(skill_df)):
+    plt.text(skill_df['skill_percent'][i] + 0.5, skill_df['median_salary'][i],  # x, y
+             skill_df['skill'][i], fontsize=9)
+
+# Set title and axis labels
+plt.title('Most Optimal Skills for Data Analysts in the US')
+plt.xlabel('Percent of Data Analyst Jobs')
+plt.ylabel('Median Salary ($USD)')
+
+# Format y-axis as dollars (optional but nice!)
+plt.gca().set_yticklabels(['${:,.0f}K'.format(y/1000) for y in plt.gca().get_yticks()])
+
+# Show grid
+plt.grid(True, linestyle='--', alpha=0.5)
+
+plt.tight_layout()
+plt.show()
