@@ -1,3 +1,19 @@
 # data_analysis_project
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+df=pd.read_csv(r"C:\Users\Yashvi\Downloads\data_jobs.csv")
+
+df_jobs=df['job_title_short'].copy()
+df_job_counts=df_jobs.value_counts().to_frame()
+print(df_job_counts)
+
+sns.barplot(data=df_job_counts,x='count',y='job_title_short',palette='dark:b_r')
+plt.ylabel('jobs')
+plt.xlabel('job counts')
+plt.title('Number of Jobs per Job Title')
+sns.set_theme(style='ticks')
+plt.tight_layout()
+plt.show()
 ## 📊 Number of Jobs per Job Title
 ![Number of Jobs per Job Title](https://github.com/yashvishah-20/data_analysis_project/blob/main/image.png?raw=true)
