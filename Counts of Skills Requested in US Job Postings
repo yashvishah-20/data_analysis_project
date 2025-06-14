@@ -1,0 +1,32 @@
+import pandas as pd
+import ast #for eval
+import matplotlib.pyplot as plt
+import seaborn as sns
+df=pd.read_csv(r"C:\Users\Yashvi\Downloads\data_jobs.csv")
+df['job_skills'] = df['job_skills'].apply(lambda x: ast.literal_eval(x) if pd.notna(x) else x)
+df_US=df[df['job_country']=='United States'].copy()
+
+df_skills=df_US.explode('job_skills')
+
+
+df_skills_count=df_skills.groupby(['job_skills','job_title_short']).size()
+df_skills_count = df_skills_count.reset_index(name='skill_count')
+df_skills_count.sort_values(by='skill_count', ascending=False, inplace=True)
+
+job_title=df_skills_count['job_title_short'].unique().tolist()
+job_title=sorted(job_title[:3])
+
+
+fig,ax=plt.subplots(len(job_title),1)
+sns.set_theme(style='ticks')
+for i,job_title in enumerate(job_title):
+	df_plot=df_skills_count[df_skills_count['job_title_short']==job_title].head(5)[::-1]
+	sns.barplot(data=df_plot,x='skill_count',y='job_skills',ax=ax[i],hue='skill_count',palette='dark:b_r',legend=False)
+	ax[i].set_title(job_title)
+	ax[i].invert_yaxis()
+	ax[i].set_ylabel('')
+	ax[i].set_xlabel('')
+	ax[i].set_xlim(0, 45000)
+fig.suptitle('Counts of Skills Requested in US Job Postings', fontsize=15)
+fig.tight_layout(h_pad=0.5) # fix the overlap
+plt.show()
